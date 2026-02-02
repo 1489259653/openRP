@@ -20,7 +20,7 @@ stock createHouse(playerid, type, ownerid, interiorid, price, posx, posy, posz) 
         House[houseid][MapIcon] = CreateDynamicMapIcon(posx, posy, posz, 32, 0x0000FFFF, -1, -1, -1, 300.0);
 	    House[houseid][Enter_HousePickup] = CreateDynamicPickup(1273, 1, posx, posy, posz, houseid);
     } else {
-        printf("Erro: houseid excede o limite m谩ximo (%d).", MAX_HOUSES);
+        printf("Erro: houseid excede o limite máximo (%d).", MAX_HOUSES);
     }
 
     return true;
@@ -50,15 +50,15 @@ public loadDynamicHouses() {
                 House[houseid][MapIcon] = CreateDynamicMapIcon(House[houseid][Enter_PosX], House[houseid][Enter_PosY], House[houseid][Enter_PosZ], 32, 0x0000FFFF, -1, -1, -1, 300.0);
                 House[houseid][Enter_HousePickup] = CreateDynamicPickup(1273, 1, House[houseid][Enter_PosX], House[houseid][Enter_PosY], House[houseid][Enter_PosZ], houseid);
 
-                format(houseText, sizeof(houseText), "Casa {#aefa97}%d\n{#5fda3a}$%d{#008080}\n", houseid, House[houseid][Price]);
+                format(houseText, sizeof(houseText), "房子 {#aefa97}%d\n{#5fda3a}$%d{#008080}\n", houseid, House[houseid][Price]);
                 Create3DTextLabel(houseText, 0x008080FF, House[houseid][Enter_PosX], House[houseid][Enter_PosY], House[houseid][Enter_PosZ], 40.0, 0);
             } else {
-                printf("Erro: houseid excede o limite m谩ximo (%d).", MAX_HOUSES);
+                printf("错误: 房屋ID超出最大限制 (%d).", MAX_HOUSES);
             }
         }
         printf("[Server] Number of houses loaded: %d", rows);
     } else {
-        printf("Nenhuma casa encontrada no banco de dados.");
+        printf("在数据库中未找到任何房屋。");
     }
 
     return true;

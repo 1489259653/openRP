@@ -5,26 +5,32 @@ forward checkAccount(playerid);
 forward loadAccount(playerid);
 forward registerAccount(playerid);
 forward saveAccount(playerid);
+forward ShowRegisterDialog(playerid);
 
 public checkAccount(playerid) {
     if(cache_num_rows() > 0) {
         cache_get_value_name(0, "Password", Player[playerid][Password], 24);
-        ShowPlayerDialog(playerid, D_LOGIN, DIALOG_STYLE_PASSWORD, "Login", "Digite sua senha para entrar em nosso servidor.", "Confirmar", "Sair");
+        ShowPlayerDialog(playerid, D_LOGIN, DIALOG_STYLE_PASSWORD, "登录", "请输入您的密码以进入我们的服务器。", "确认", "退出");
     } else
-        ShowPlayerDialog(playerid, D_REGISTER, DIALOG_STYLE_INPUT, "Registro", "Digite uma senha para se registrar em nosso servidor", "Registrar", "Sair");
+        ShowRegisterDialog(playerid);
 }
 
 public registerAccount(playerid) {
     new Query[90];
     Player[playerid][ID] = cache_insert_id();
-    printf("[MYSQL] Jogador %s registrado como ID %d", GetPlayerNameEx(playerid), Player[playerid][ID]);
+    printf("[MYSQL] 玩家 %s 注册为 ID %d", GetPlayerNameEx(playerid), Player[playerid][ID]);
 
     mysql_format(ConnectSQL, Query, sizeof(Query), "SELECT * FROM users WHERE ID='%i'", Player[playerid][ID]);
     mysql_query(ConnectSQL,Query);
 
     loadAccount(playerid);
     return true;
-} 
+}
+
+public ShowRegisterDialog(playerid) {
+    ShowPlayerDialog(playerid, D_REGISTER, DIALOG_STYLE_INPUT, "注册", "请输入密码以在我们的服务器上注册", "注册", "退出");
+    return true;
+}
 
 public loadAccount(playerid) {
     Player[playerid][isLogged] = true;
@@ -81,7 +87,7 @@ public saveAccount(playerid) {
 									Player[playerid][ID]);
     mysql_query(ConnectSQL, Query);
 
-    printf("[MYSQL] Dados do Jogador %s ID %d salvo com sucesso", GetPlayerNameEx(playerid), Player[playerid][ID]); // Apenas um debug
+    printf("[MYSQL] 玩家 %s 的 ID %d 成功保存数据", GetPlayerNameEx(playerid), Player[playerid][ID]); // Apenas um debug
 
     return true;
 }
@@ -130,10 +136,10 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
                 return Kick(playerid);
 
             if(strlen(inputtext) < 4 || strlen(inputtext) > 24) {
-                SendClientMessage(playerid, 0xFF0000AA, "[SERVER] Escolha uma senha entre 4 a 24 caracteres.");
+                SendClientMessage(playerid, 0xFF0000AA, "[服务器] 请选择4到24个字符之间的密码。");
                 TogglePlayerSpectating(playerid, true);
 
-                ShowPlayerDialog(playerid, D_REGISTER, DIALOG_STYLE_INPUT, "Registro", "Digite uma senha para se registrar em nosso servidor", "Registrar", "Sair"); // Mostra o dialog para ele tentar de novo.
+                ShowRegisterDialog(playerid); // 显示对话框让他重新尝试。
 
             } else {
                 TogglePlayerSpectating(playerid, false);
