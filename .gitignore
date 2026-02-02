@@ -2,3 +2,4 @@
 omp-server.exe
 omp-server.pdb
 log.txt
+*.log
