@@ -18,6 +18,16 @@ new g_PlayerGender[MAX_PLAYERS];
 // 存储玩家的默认皮肤
 new g_PlayerDefaultSkin[MAX_PLAYERS];
 
+// 延迟设置皮肤的函数
+forward SetPlayerSkinDelayed(playerid, skinid);
+public SetPlayerSkinDelayed(playerid, skinid) {
+    if(IsPlayerConnected(playerid)) {
+        SetPlayerSkin(playerid, skinid);
+    }
+}
+
+
+
 // 加载 JSON 配置
 LoadConfig() {
     new Node:root;
@@ -128,16 +138,18 @@ public loadAccount(playerid) {
     SetPlayerScore(playerid,                Player[playerid][Level]);
     GivePlayerMoney(playerid,               Player[playerid][Money]);
 
-    // 确保皮肤值正确
-    printf("[DEBUG] 加载玩家 %s 的皮肤: %d", GetPlayerNameEx(playerid), Player[playerid][Skin]);
+    // 设置重生信息，使用正确的皮肤
+    SetSpawnInfo(playerid, 0, Player[playerid][Skin], Player[playerid][PosX], Player[playerid][PosY], Player[playerid][PosZ], Player[playerid][PosA], weapon:0, weapon:0, weapon:0, weapon:0, weapon:0, weapon:0);
     
-    // 设置玩家皮肤
+    // 重生玩家
+    SpawnPlayer(playerid);
+    
+    // 重生后设置皮肤，确保皮肤被正确应用
     SetPlayerSkin(playerid, Player[playerid][Skin]);
     
-    // 设置重生信息
-    SetSpawnInfo(playerid, 0, Player[playerid][Skin], Player[playerid][PosX], Player[playerid][PosY], Player[playerid][PosZ], Player[playerid][PosA], weapon:0, weapon:0, weapon:0, weapon:0, weapon:0, weapon:0);
-    SpawnPlayer(playerid);
-
+    // 延迟一点时间后再次设置皮肤，确保皮肤被正确应用
+    SetTimerEx("SetPlayerSkinDelayed", 100, false, "ii", playerid, Player[playerid][Skin]);
+    
     return true;
 } 
 
@@ -148,6 +160,7 @@ public saveAccount(playerid) {
     new Query[250];
     Player[playerid][Money] = GetPlayerMoney(playerid); 
     Player[playerid][Level] = GetPlayerScore(playerid);
+    
     Player[playerid][Skin] = GetPlayerSkin(playerid);
     GetPlayerPos(playerid, Player[playerid][PosX], Player[playerid][PosY], Player[playerid][PosZ]);
     GetPlayerFacingAngle(playerid, Player[playerid][PosA]);
@@ -240,6 +253,8 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
             
             // 根据性别设置默认皮肤：男性 = 26，女性 = 194
             g_PlayerDefaultSkin[playerid] = listitem == 0 ? 26 : 194;
+            
+
 
             // 显示密码输入对话框
             ShowPlayerDialog(playerid, D_REGISTER_PASSWORD, DIALOG_STYLE_INPUT, "注册 - 输入密码", "请输入密码以在我们的服务器上注册", "注册", "退出");
