@@ -1,6 +1,5 @@
 /*
-    服务器等级结构
-
+    管理员等级定义
  */
 
 #define PLAYER_RANK          0

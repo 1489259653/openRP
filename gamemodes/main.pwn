@@ -5,7 +5,7 @@
 #if defined MAX_PLAYERS
 	#undef MAX_PLAYERS
 #endif
-#define MAX_PLAYERS	        501
+#define MAX_PLAYERS			501
 #define MAX_PLAYER_NAME     24
 #define MAX_BUSINESS        1
 #define MAX_HOUSES          200
@@ -77,3 +77,4 @@ hook OnGameModeInit() {
 
 //Player
 #include "../../src/player/commands.pwn"
+#include "../../src/vehicle/rental_system.pwn"
