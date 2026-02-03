@@ -79,7 +79,8 @@
         "legacy_plugins": [
             "mysql",
             "sscanf",
-            "streamer"
+            "streamer",
+            "json"
         ],
         "main_scripts": [
             "main"

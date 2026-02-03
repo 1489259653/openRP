@@ -18,6 +18,7 @@
 #include <YSI\YSI_Visual\y_commands>
 #include <sscanf2>
 #include <sscanffix>
+#include <json>
 
 main() {
 	print("\n-----------------------------------");
@@ -39,7 +40,8 @@ hook OnGameModeInit() {
     // gamemode
 	SetGameModeText("RPG");
     SetWorldTime(0);
-	AddPlayerClass(0, 1958.3783, 1343.1572, 15.3746, 269.1425, 0, 0, 0, 0, 0, 0);
+	// 使用默认出生位置
+	AddPlayerClass(0, -2240.9197, 252.0263, 35.3203, 91.2125, 0, 0, 0, 0, 0, 0);
 	return true;
 }
 

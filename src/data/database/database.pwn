@@ -11,9 +11,9 @@ hook OnGameModeInit() {
     ConnectSQL = mysql_connect(HOST, USER, PASS, DB);
 
     if(mysql_errno(ConnectSQL) != 0) {
-        print("[MySQL] Falha ao tentar estabelecer conex茫o com o banco de dados.");
+        print("[MySQL] 数据库连接失败.");
     } else {
-        print("[MySQL] Sucesso ao conectar com o banco de dados.");
+        print("[MySQL] 数据库连接成功.");
     }
     return true;
 }

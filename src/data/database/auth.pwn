@@ -1,4 +1,74 @@
 #include <YSI\YSI_coding\y_hooks>
+#include <json>
+
+// 全局配置变量
+new Float:gSpawnX = -2240.9197;
+new Float:gSpawnY = 252.0263;
+new Float:gSpawnZ = 35.3203;
+new Float:gSpawnAngle = 91.2125;
+new gStartingMoney = 1000;
+
+// 加载 JSON 配置
+LoadConfig() {
+    new Node:root;
+    new error;
+    
+    // 尝试解析 ServerConfig.json 文件（当前目录）
+    error = JSON_ParseFile("ServerConfig.json", root);
+    
+    // 如果解析失败，尝试相对于 gamemodes 目录的路径
+    if (error) {
+        error = JSON_ParseFile("../ServerConfig.json", root);
+    }
+    
+    // 如果仍然失败，尝试绝对路径
+    if (error) {
+        error = JSON_ParseFile("e:\\Dev\\samp\\openRP\\ServerConfig.json", root);
+    }
+    
+    if (error) {
+        printf("[Config] 无法解析 ServerConfig.json 配置文件，使用默认值，错误: %d", error);
+        return 0;
+    }
+    
+    // 读取出生位置配置
+    new Node:spawnNode;
+    JSON_GetObject(root, "spawn", spawnNode);
+    
+    // 检查 spawnNode 是否有效
+    if (JSON_NodeType(spawnNode) == JSON_NODE_NULL) {
+        print("[Config] 未找到 spawn 配置，使用默认值");
+    } else {
+        new Float:x, Float:y, Float:z, Float:angle;
+        JSON_GetFloat(spawnNode, "x", x);
+        JSON_GetFloat(spawnNode, "y", y);
+        JSON_GetFloat(spawnNode, "z", z);
+        JSON_GetFloat(spawnNode, "angle", angle);
+        
+        gSpawnX = x;
+        gSpawnY = y;
+        gSpawnZ = z;
+        gSpawnAngle = angle;
+        
+        printf("[Config] 已加载出生位置: %.2f, %.2f, %.2f, %.2f", gSpawnX, gSpawnY, gSpawnZ, gSpawnAngle);
+    }
+    
+    // 读取经济配置
+    new Node:economyNode;
+    JSON_GetObject(root, "economy", economyNode);
+    
+    // 检查 economyNode 是否有效
+    if (JSON_NodeType(economyNode) == JSON_NODE_NULL) {
+        print("[Config] 未找到 economy 配置，使用默认值");
+    } else {
+        new money;
+        JSON_GetInt(economyNode, "starting_money", money);
+        gStartingMoney = money;
+        printf("[Config] 已加载初始金钱: %d", gStartingMoney);
+    }
+    
+    return 1;
+}
 
 // Forwards
 forward checkAccount(playerid);
@@ -77,14 +147,14 @@ public saveAccount(playerid) {
     `PosZ`='%f', \
     `PosA`='%f' WHERE `ID`='%i'", 	Player[playerid][Money],
                                     Player[playerid][Admin],
-									Player[playerid][Level],
-									Player[playerid][Exp],
-									Player[playerid][Skin],
-									Player[playerid][PosX],
-									Player[playerid][PosY],
-									Player[playerid][PosZ],
-									Player[playerid][PosA],
-									Player[playerid][ID]);
+										Player[playerid][Level],
+										Player[playerid][Exp],
+										Player[playerid][Skin],
+										Player[playerid][PosX],
+										Player[playerid][PosY],
+										Player[playerid][PosZ],
+										Player[playerid][PosA],
+										Player[playerid][ID]);
     mysql_query(ConnectSQL, Query);
 
     printf("[MYSQL] 玩家 %s 的 ID %d 成功保存数据", GetPlayerNameEx(playerid), Player[playerid][ID]); // Apenas um debug
@@ -109,9 +179,18 @@ stock clearAccount(playerid) {
     Player[playerid][isLogged]      = false;
 }
 
+// 配置加载标志
+new bool:gConfigLoaded = false;
+
 hook OnPlayerConnect(playerid) {
 	new Query[90];
 	TogglePlayerSpectating(playerid, true); // Disable "spawn" menu when start server;
+
+	// 确保配置已加载
+	if (!gConfigLoaded) {
+		LoadConfig();
+		gConfigLoaded = true;
+	}
 
 	mysql_format(ConnectSQL, Query, sizeof(Query), "SELECT `Password`, `ID` FROM `Users` WHERE `Name`='%e'", GetPlayerNameEx(playerid));
     mysql_tquery(ConnectSQL, Query, "checkAccount", "i", playerid);
@@ -128,7 +207,7 @@ hook OnPlayerDisconnect(playerid, reason) {
 }
 
 hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
-    new Query[125];
+    new Query[250];
 
     switch(dialogid) {
         case D_REGISTER: {
@@ -143,7 +222,7 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 
             } else {
                 TogglePlayerSpectating(playerid, false);
-                mysql_format(ConnectSQL, Query, sizeof(Query), "INSERT INTO `users`(`Name`,`Password`) VALUES ('%e', '%e')", GetPlayerNameEx(playerid), inputtext);
+                mysql_format(ConnectSQL, Query, sizeof(Query), "INSERT INTO `users`(`Name`,`Password`,`PosX`,`PosY`,`PosZ`,`PosA`,`Money`) VALUES ('%e', '%e', '%f', '%f', '%f', '%f', '%d')", GetPlayerNameEx(playerid), inputtext, gSpawnX, gSpawnY, gSpawnZ, gSpawnAngle, gStartingMoney);
                 mysql_tquery(ConnectSQL, Query, "registerAccount", "i", playerid);
             }
         }

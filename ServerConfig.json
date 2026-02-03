@@ -1,0 +1,15 @@
+{
+    "spawn": {
+        "x": 1614.85,
+        "y": -2327.04,
+        "z": 13.5469,
+        "angle": 2.41443
+    },
+    "server": {
+        "name": "OpenRP",
+        "max_players": 50
+    },
+    "economy": {
+        "starting_money": 1000
+    }
+}
