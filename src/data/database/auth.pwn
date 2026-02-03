@@ -15,6 +15,8 @@ new gStartingMoney = 1000;
 
 // 存储玩家选择的性别
 new g_PlayerGender[MAX_PLAYERS];
+// 存储玩家的默认皮肤
+new g_PlayerDefaultSkin[MAX_PLAYERS];
 
 // 加载 JSON 配置
 LoadConfig() {
@@ -99,9 +101,7 @@ public registerAccount(playerid) {
     printf("[MYSQL] 玩家 %s 注册为 ID %d", GetPlayerNameEx(playerid), Player[playerid][ID]);
 
     mysql_format(ConnectSQL, Query, sizeof(Query), "SELECT * FROM users WHERE ID='%i'", Player[playerid][ID]);
-    mysql_query(ConnectSQL,Query);
-
-    loadAccount(playerid);
+    mysql_tquery(ConnectSQL, Query, "loadAccount", "i", playerid);
     return true;
 }
 
@@ -128,6 +128,13 @@ public loadAccount(playerid) {
     SetPlayerScore(playerid,                Player[playerid][Level]);
     GivePlayerMoney(playerid,               Player[playerid][Money]);
 
+    // 确保皮肤值正确
+    printf("[DEBUG] 加载玩家 %s 的皮肤: %d", GetPlayerNameEx(playerid), Player[playerid][Skin]);
+    
+    // 设置玩家皮肤
+    SetPlayerSkin(playerid, Player[playerid][Skin]);
+    
+    // 设置重生信息
     SetSpawnInfo(playerid, 0, Player[playerid][Skin], Player[playerid][PosX], Player[playerid][PosY], Player[playerid][PosZ], Player[playerid][PosA], weapon:0, weapon:0, weapon:0, weapon:0, weapon:0, weapon:0);
     SpawnPlayer(playerid);
 
@@ -230,6 +237,9 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 
             // 存储玩家选择的性别：0 = 女性，1 = 男性
             g_PlayerGender[playerid] = listitem == 0 ? 1 : 0;
+            
+            // 根据性别设置默认皮肤：男性 = 26，女性 = 194
+            g_PlayerDefaultSkin[playerid] = listitem == 0 ? 26 : 194;
 
             // 显示密码输入对话框
             ShowPlayerDialog(playerid, D_REGISTER_PASSWORD, DIALOG_STYLE_INPUT, "注册 - 输入密码", "请输入密码以在我们的服务器上注册", "注册", "退出");
@@ -247,7 +257,7 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 
             } else {
                 TogglePlayerSpectating(playerid, false);
-                mysql_format(ConnectSQL, Query, sizeof(Query), "INSERT INTO `users`(`Name`,`Password`,`PosX`,`PosY`,`PosZ`,`PosA`,`Money`,`Gender`) VALUES ('%e', '%e', '%f', '%f', '%f', '%f', '%d', '%d')", GetPlayerNameEx(playerid), inputtext, gSpawnX, gSpawnY, gSpawnZ, gSpawnAngle, gStartingMoney, g_PlayerGender[playerid]);
+                mysql_format(ConnectSQL, Query, sizeof(Query), "INSERT INTO `users`(`Name`,`Password`,`PosX`,`PosY`,`PosZ`,`PosA`,`Money`,`Gender`,`Skin`) VALUES ('%e', '%e', '%f', '%f', '%f', '%f', '%d', '%d', '%d')", GetPlayerNameEx(playerid), inputtext, gSpawnX, gSpawnY, gSpawnZ, gSpawnAngle, gStartingMoney, g_PlayerGender[playerid], g_PlayerDefaultSkin[playerid]);
                 mysql_tquery(ConnectSQL, Query, "registerAccount", "i", playerid);
             }
         }
@@ -260,11 +270,11 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
                 mysql_format(ConnectSQL, Query, sizeof(Query), "SELECT * FROM users WHERE Name='%e'", GetPlayerNameEx(playerid));
                 mysql_tquery(ConnectSQL, Query, "loadAccount", "i", playerid);
 
-                SendClientMessage(playerid, 0x80FF00AA, "[Server] Logado com sucesso.");
+                SendClientMessage(playerid, 0x80FF00AA, "[服务器] 登录成功。");
             } else {
                 TogglePlayerSpectating(playerid, true);
-                SendClientMessage(playerid, 0xFF0000AA, "[SERVER] Senha errada, tente novamente.");
-                ShowPlayerDialog(playerid, D_LOGIN, DIALOG_STYLE_PASSWORD, "Login", "Digite sua senha para entrar em nosso servidor.", "Confirmar", "Sair");
+                SendClientMessage(playerid, 0xFF0000AA, "[服务器] 密码错误，请重试。");
+                ShowPlayerDialog(playerid, D_LOGIN, DIALOG_STYLE_PASSWORD, "登录", "请输入您的密码以进入我们的服务器。", "确认", "退出");
             }
         }
     }
