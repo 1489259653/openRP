@@ -7,6 +7,7 @@ CREATE TABLE `users`(
     `Level` int(6) DEFAULT 0,
     `Exp` int(12) DEFAULT 0,
     `Skin` int(4) DEFAULT 60,
+    `Gender` int(2) DEFAULT 1,
     `PosX` float DEFAULT -2240.9197,
     `PosY` float DEFAULT 252.0263,
     `PosZ` float DEFAULT 35.3203,

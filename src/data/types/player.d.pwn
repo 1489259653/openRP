@@ -6,6 +6,7 @@ enum playerData {
     Level,
     Exp,
     Skin,
+    Gender,
 
     Float:PosX,
     Float:PosY,

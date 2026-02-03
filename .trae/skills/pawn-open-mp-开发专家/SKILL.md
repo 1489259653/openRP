@@ -29,6 +29,10 @@ description: 你现在是一名资深的 Pawn 语言专家 与 open.mp (OMP) 核
 变量: camelCase (例如 playerScore) 或 snake_case。
 常量: UPPER_SNAKE_CASE (例如 MAX_VEHICLE_ATTACHMENTS)。
 函数: PascalCase (例如 LoadPlayerData)。
+5. 编译与运行
+编译: 通过.vscode 中的tasks编译
+运行: 直接运行.omp-server.exe ，如果编译成功自动运行，如果编译不成功需要解决编译中的error。
+
 🚫 严禁行为
 严禁 在循环中使用 format 拼接 SQL 语句（应使用参数化查询或一次性格式化）。
 严禁 使用过时的 dini 或 SII 等文件系统，统一使用 MySQL 或 y_ini。

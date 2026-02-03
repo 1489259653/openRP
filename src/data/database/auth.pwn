@@ -1,12 +1,20 @@
 #include <YSI\YSI_coding\y_hooks>
 #include <json>
 
+// 定义对话框ID
+#define D_LOGIN 0
+#define D_REGISTER_GENDER 1
+#define D_REGISTER_PASSWORD 2
+
 // 全局配置变量
 new Float:gSpawnX = -2240.9197;
 new Float:gSpawnY = 252.0263;
 new Float:gSpawnZ = 35.3203;
 new Float:gSpawnAngle = 91.2125;
 new gStartingMoney = 1000;
+
+// 存储玩家选择的性别
+new g_PlayerGender[MAX_PLAYERS];
 
 // 加载 JSON 配置
 LoadConfig() {
@@ -98,7 +106,7 @@ public registerAccount(playerid) {
 }
 
 public ShowRegisterDialog(playerid) {
-    ShowPlayerDialog(playerid, D_REGISTER, DIALOG_STYLE_INPUT, "注册", "请输入密码以在我们的服务器上注册", "注册", "退出");
+    ShowPlayerDialog(playerid, D_REGISTER_GENDER, DIALOG_STYLE_LIST, "注册 - 选择性别", "男性\n女性", "下一步", "退出");
     return true;
 }
 
@@ -111,6 +119,7 @@ public loadAccount(playerid) {
     cache_get_value_int(0,      "Level",    Player[playerid][Level]);
 	cache_get_value_int(0,      "Exp",      Player[playerid][Exp]); 
     cache_get_value_int(0,      "Skin",     Player[playerid][Skin]);
+    cache_get_value_int(0,      "Gender",   Player[playerid][Gender]);
     cache_get_value_float(0,    "PosX",     Player[playerid][PosX]);
     cache_get_value_float(0,    "PosY",     Player[playerid][PosY]);
     cache_get_value_float(0,    "PosZ",     Player[playerid][PosZ]);
@@ -119,7 +128,7 @@ public loadAccount(playerid) {
     SetPlayerScore(playerid,                Player[playerid][Level]);
     GivePlayerMoney(playerid,               Player[playerid][Money]);
 
-    SetSpawnInfo(playerid, 0, Player[playerid][Skin], Player[playerid][PosX], Player[playerid][PosY], Player[playerid][PosZ], Player[playerid][PosA], 0, 0, 0, 0 ,0, 0);
+    SetSpawnInfo(playerid, 0, Player[playerid][Skin], Player[playerid][PosX], Player[playerid][PosY], Player[playerid][PosZ], Player[playerid][PosA], weapon:0, weapon:0, weapon:0, weapon:0, weapon:0, weapon:0);
     SpawnPlayer(playerid);
 
     return true;
@@ -142,19 +151,21 @@ public saveAccount(playerid) {
     `Level`='%i', \
     `Exp`='%i', \
     `Skin`='%i', \
+    `Gender`='%i', \
     `PosX`='%f', \
     `PosY`='%f', \
     `PosZ`='%f', \
     `PosA`='%f' WHERE `ID`='%i'", 	Player[playerid][Money],
                                     Player[playerid][Admin],
-										Player[playerid][Level],
-										Player[playerid][Exp],
-										Player[playerid][Skin],
-										Player[playerid][PosX],
-										Player[playerid][PosY],
-										Player[playerid][PosZ],
-										Player[playerid][PosA],
-										Player[playerid][ID]);
+											Player[playerid][Level],
+											Player[playerid][Exp],
+											Player[playerid][Skin],
+											Player[playerid][Gender],
+											Player[playerid][PosX],
+											Player[playerid][PosY],
+											Player[playerid][PosZ],
+											Player[playerid][PosA],
+											Player[playerid][ID]);
     mysql_query(ConnectSQL, Query);
 
     printf("[MYSQL] 玩家 %s 的 ID %d 成功保存数据", GetPlayerNameEx(playerid), Player[playerid][ID]); // Apenas um debug
@@ -170,6 +181,7 @@ stock clearAccount(playerid) {
     Player[playerid][Level]         = 0;
     Player[playerid][Exp]           = 0;
     Player[playerid][Skin]          = 0;
+    Player[playerid][Gender]        = 0;
 
     Player[playerid][PosX]          = 0;
     Player[playerid][PosA]          = 0;
@@ -206,11 +218,23 @@ hook OnPlayerDisconnect(playerid, reason) {
 	return true;
 }
 
+
+
 hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
     new Query[250];
 
     switch(dialogid) {
-        case D_REGISTER: {
+        case D_REGISTER_GENDER: {
+            if(!response)
+                return Kick(playerid);
+
+            // 存储玩家选择的性别：0 = 女性，1 = 男性
+            g_PlayerGender[playerid] = listitem == 0 ? 1 : 0;
+
+            // 显示密码输入对话框
+            ShowPlayerDialog(playerid, D_REGISTER_PASSWORD, DIALOG_STYLE_INPUT, "注册 - 输入密码", "请输入密码以在我们的服务器上注册", "注册", "退出");
+        }
+        case D_REGISTER_PASSWORD: {
             if(!response)
                 return Kick(playerid);
 
@@ -218,11 +242,12 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
                 SendClientMessage(playerid, 0xFF0000AA, "[服务器] 请选择4到24个字符之间的密码。");
                 TogglePlayerSpectating(playerid, true);
 
-                ShowRegisterDialog(playerid); // 显示对话框让他重新尝试。
+                // 重新显示密码输入对话框
+                ShowPlayerDialog(playerid, D_REGISTER_PASSWORD, DIALOG_STYLE_INPUT, "注册 - 输入密码", "请输入密码以在我们的服务器上注册", "注册", "退出");
 
             } else {
                 TogglePlayerSpectating(playerid, false);
-                mysql_format(ConnectSQL, Query, sizeof(Query), "INSERT INTO `users`(`Name`,`Password`,`PosX`,`PosY`,`PosZ`,`PosA`,`Money`) VALUES ('%e', '%e', '%f', '%f', '%f', '%f', '%d')", GetPlayerNameEx(playerid), inputtext, gSpawnX, gSpawnY, gSpawnZ, gSpawnAngle, gStartingMoney);
+                mysql_format(ConnectSQL, Query, sizeof(Query), "INSERT INTO `users`(`Name`,`Password`,`PosX`,`PosY`,`PosZ`,`PosA`,`Money`,`Gender`) VALUES ('%e', '%e', '%f', '%f', '%f', '%f', '%d', '%d')", GetPlayerNameEx(playerid), inputtext, gSpawnX, gSpawnY, gSpawnZ, gSpawnAngle, gStartingMoney, g_PlayerGender[playerid]);
                 mysql_tquery(ConnectSQL, Query, "registerAccount", "i", playerid);
             }
         }
