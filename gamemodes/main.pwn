@@ -77,4 +77,7 @@ hook OnGameModeInit() {
 
 //Player
 #include "../../src/player/commands.pwn"
+
+// Vehicle
+#include "../../src/vehicle/vehicle_system.pwn"
 #include "../../src/vehicle/rental_system.pwn"

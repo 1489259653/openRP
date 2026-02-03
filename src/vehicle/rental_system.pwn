@@ -28,6 +28,7 @@ enum PlayerRentalInfo {
 new RentalCars[MAX_VEHICLES][RentalCarInfo];
 new PlayerRentals[MAX_PLAYERS][PlayerRentalInfo];
 new RentalCarCount = 0;
+new PlayerRentalIndex[MAX_PLAYERS]; // 存储玩家当前选择的租车索引
 
 // 加载租车信息
 stock LoadRentalCars() {
@@ -176,9 +177,10 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
     if(dialogid == DIALOG_RENTAL_CONFIRM) {
         if(response) {
             // 确认租车
-            // 检查listitem是否有效
-            if(listitem >= 0 && listitem < RentalCarCount) {
-                RentCar(playerid, listitem);
+            // 使用存储的租车索引
+            new rentalIndex = PlayerRentalIndex[playerid];
+            if(rentalIndex >= 0 && rentalIndex < RentalCarCount) {
+                RentCar(playerid, rentalIndex);
             }
         }
         return true;
@@ -214,6 +216,9 @@ hook OnPlayerEnterVehicle(playerid, vehicleid, ispassenger) {
                 return true;
             }
             
+            // 存储租车索引
+            PlayerRentalIndex[playerid] = rentalIndex;
+            
             // 显示租车确认对话框
             new dialogText[100];
             format(dialogText, sizeof(dialogText), "车型: %d\n价格: %d\n\n确定租用此车辆吗？", 
@@ -243,6 +248,7 @@ hook OnPlayerDisconnect(playerid, reason) {
     }
     return 1;
 }
+
 
 // 退租命令
 YCMD:tuizu(playerid, params[], help) {
@@ -359,8 +365,28 @@ hook OnGameModeInit() {
     for(new i = 0; i < MAX_PLAYERS; i++) {
         PlayerRentals[i][PlayerRentalVehicleID] = 0;
         PlayerRentals[i][PlayerRentalCarID] = -1;
+        PlayerRentalIndex[i] = -1; // 初始化租车索引
     }
     
+    return 1;
+}
+
+ // 处理玩家状态变化
+hook OnPlayerStateChange(playerid, newstate, oldstate) {
+    if(newstate == PLAYER_STATE_DRIVER) {
+        new vehicleid = GetPlayerVehicleID(playerid);
+        // 检查是否为租车
+        if(IsRentalVehicle(vehicleid)) {
+            // 检查玩家是否为车辆的所有者
+            new owner = GetRentalVehicleOwner(vehicleid);
+            if(owner != playerid) {
+                // 强制玩家下车
+                RemovePlayerFromVehicle(playerid);
+                SendClientMessage(playerid, 0xFF0000AA, "[租车系统] 请先租用此车辆");
+                return true;
+            }
+        }
+    }
     return 1;
 }
 
