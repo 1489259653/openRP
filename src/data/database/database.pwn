@@ -11,9 +11,10 @@ hook OnGameModeInit() {
     ConnectSQL = mysql_connect(HOST, USER, PASS, DB);
 
     if(mysql_errno(ConnectSQL) != 0) {
-        print("[MySQL] Êı¾İ¿âÁ¬½ÓÊ§°Ü.");
+        print("[MySQL] æ•°æ®åº“è¿æ¥å¤±è´¥.");
     } else {
-        print("[MySQL] Êı¾İ¿âÁ¬½Ó³É¹¦.");
+        print("[MySQL] æ•°æ®åº“è¿æ¥æˆåŠŸ.");
+        mysql_set_charset("gbk", ConnectSQL);
     }
     return true;
 }

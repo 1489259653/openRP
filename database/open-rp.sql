@@ -27,3 +27,24 @@ CREATE TABLE `houses` (
     `PosY` float,
     `PosZ` float
 );
+
+CREATE TABLE `shops` (
+    `ID` INT AUTO_INCREMENT PRIMARY KEY,
+    `Name` varchar(32) NOT NULL,
+    `InteriorID` INT NOT NULL,
+    `EnterX` FLOAT NOT NULL,
+    `EnterY` FLOAT NOT NULL,
+    `EnterZ` FLOAT NOT NULL,
+    `ExitX` FLOAT NOT NULL,
+    `ExitY` FLOAT NOT NULL,
+    `ExitZ` FLOAT NOT NULL
+);
+
+CREATE TABLE `shop_items` (
+    `ID` INT AUTO_INCREMENT PRIMARY KEY,
+    `ShopID` INT NOT NULL,
+    `Name` varchar(32) NOT NULL,
+    `Price` INT NOT NULL,
+    `Value` INT NOT NULL,
+    FOREIGN KEY (`ShopID`) REFERENCES `shops`(`ID`) ON DELETE CASCADE
+);

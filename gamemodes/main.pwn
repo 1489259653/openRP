@@ -40,7 +40,7 @@ hook OnGameModeInit() {
     // gamemode
 	SetGameModeText("RPG");
     SetWorldTime(0);
-	// 使用默认出生位置
+	// 使锟斤拷默锟较筹拷锟斤拷位锟斤拷
 	AddPlayerClass(0, -2240.9197, 252.0263, 35.3203, 91.2125, 0, 0, 0, 0, 0, 0);
 	return true;
 }
@@ -58,6 +58,7 @@ hook OnGameModeInit() {
 #include "../../src/data/types/houses.d.pwn"
 #include "../../src/data/types/player.d.pwn"
 #include "../../src/data/types/vehicles.d.pwn"
+#include "../../src/data/types/shops.d.pwn"
 
 // Utils
 #include "../../src/utils/skins.pwn"
@@ -70,6 +71,7 @@ hook OnGameModeInit() {
 // Data
 #include "../../src/data/database/auth.pwn"
 #include "../../src/data/properties/house.pwn"
+#include "../../src/data/shops/shops.pwn"
 
 // Admin
 #include "../../src/admin/data.pwn"
